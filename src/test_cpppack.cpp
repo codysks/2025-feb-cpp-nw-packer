@@ -37,15 +37,22 @@ static_assert(0xDEADBEEF01020309 == swap64(0x09030201EFBEADDE));
 namespace fn_test {
 
 void pack_unsigned(void) {
-    //uint8_t u8__1 = 0x01;
-    //uint16_t u16__1 = 0x0203;
-    //uint32_t u32__1 = 0x04050607;
+    uint8_t u8__1 = 0x01;
+    uint16_t u16__1 = 0x0203;
+    uint32_t u32__1 = 0x04050607;
     uint64_t u64__1 = 0x08090a0b0c0d0e0f;
 
     unsigned char check_buffer[21600] = { 0 };
     packu64(check_buffer, u64__1);
-    ETRACE(memcmp(check_buffer, "\010\011\012\013\014\015\016\017\000", 9));
-    assert(!memcmp(check_buffer, "\010\011\012\013\014\015\016\017\000", 9));
+    packu32(check_buffer + 10, u32__1);
+    packu16(check_buffer + 20, u16__1);
+    packu8(check_buffer + 30, u8__1);
+    assert(!memcmp(check_buffer,
+    "\010\011\012\013\014\015\016\017\000\000"
+    "\004\005\006\007\000\000\000\000\000\000"
+    "\002\003\000\000\000\000\000\000\000\000"
+    "\001\000\000\000\000\000\000\000\000\000"
+    , 40));
 }
 } /* namespace fn_test */
 int main(void) {
