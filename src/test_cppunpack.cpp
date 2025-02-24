@@ -1,4 +1,4 @@
-#include "pack.hpp"
+#include "cppunpack.hpp"
 
 #include <cassert>
 #include <cstdint>
@@ -284,6 +284,25 @@ void vrdc_unpack(void) {
     );
     assert(m1.u8__1 == 0xe7);
     assert(m1.u16__8 == 0xd1d0);
+
+    fn_return_size = ::vrdc::vrdc_unpackle_get_written_bytes(buffer,
+        &m1.u8__1,
+        &m1.u16__2,
+        &m1.u32__3,
+        &m1.u32__4,
+        &m1.u16__5,
+        &m1.u64__6,
+        &m1.u8__7,
+        &m1.u16__8
+    );
+    assert(m1.u8__1 == 0xff);
+    assert(m1.u16__2 == byte::swap16(0xfefd));
+    assert(m1.u32__3 == byte::swap32(0xfcfbfaf9));
+    assert(m1.u32__4 == byte::swap32(0xf8f7f6f5));
+    assert(m1.u16__5 == byte::swap16(0xf4f3));
+    assert(m1.u64__6 == byte::swap64(0xf2f1f0efeeedeceb));
+    assert(m1.u8__7 == 0xea);
+    assert(m1.u16__8 == byte::swap16(0xe9e8));
 }
 
 } /* namespace fn_test */

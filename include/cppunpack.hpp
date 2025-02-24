@@ -1,5 +1,5 @@
-#ifndef FEB_2025_CPP_NW_PACKER_HPP
-#define FEB_2025_CPP_NW_PACKER_HPP
+#ifndef CPP_NW_UNPACK_HPP
+#define CPP_NW_UNPACK_HPP
 
 #include <cstdint>
 #include <cstddef>
@@ -236,7 +236,30 @@ size_t vrdc_unpack_get_written_bytes(void const* buffer, T1* arg1, TOther... arg
     return size_of_all_args(arg1, argother...);
 }
 
+[[deprecated("vrdc_unpackle() must be called with atleast 2 parameters (buffer and unpack site)")]]
+static inline
+void vrdc_unpackle([[maybe_unused]]void const* buffer) {
+    (void)0;
+}
+
+template<typename T1, typename... TOther>
+static inline
+void vrdc_unpackle(void const* buffer, T1* arg1, TOther... argother) {
+    auto p = (unsigned char const*) buffer;
+    tgunpackule(p, arg1);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    vrdc_unpackle(p + sizeof(*arg1), argother...);
+#pragma GCC diagnostic pop
+}
+template<typename T1, typename... TOther>
+static inline
+size_t vrdc_unpackle_get_written_bytes(void const* buffer, T1* arg1, TOther... argother) {
+    vrdc_unpackle(buffer, arg1, argother...);
+    return size_of_all_args(arg1, argother...);
+}
+
 } // namespace vrdc
 
-#endif /* FEB_2025_CPP_NW_PACKER_HPP */
+#endif /* CPP_NW_UNPACK_HPP */
 
