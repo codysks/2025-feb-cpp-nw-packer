@@ -134,18 +134,56 @@ T tgunpacku(void const* buffer) {
 #endif
 }
 
+
+
 template <typename T>
 static inline
-void* tgunpacku(void const* buffer, T& x) {
-    x = tgunpacku<T>(buffer);
-    return (unsigned char*)buffer + sizeof(x);
+T* tgunpacku(void const* buffer, T* x) {
+    *x = tgunpacku<T>(buffer);
+    return x + 1;
+}
+
+#if __cplusplus < 201700L
+template <typename T, size_t sz>
+struct C11TgUnpackDispatchLe;
+template <typename T>
+struct C11TgUnpackDispatchLe<T, 1u> {
+    static inline uint8_t unpack(void const* buffer) { return unpacku8le(buffer); };
+};
+template <typename T>
+struct C11TgUnpackDispatchLe<T, 2u> {
+    static inline uint16_t unpack(void const* buffer) { return unpacku16le(buffer); };
+};
+template <typename T>
+struct C11TgUnpackDispatchLe<T, 4u> {
+    static inline uint32_t unpack(void const* buffer) { return unpacku32le(buffer); };
+};
+template <typename T>
+struct C11TgUnpackDispatchLe<T, 8u> {
+    static inline uint64_t unpack(void const* buffer) { return unpacku64le(buffer); };
+};
+#endif
+
+template <typename T>
+[[nodiscard]]
+static inline
+T tgunpackule(void const* buffer) {
+#if __cplusplus >= 201700L
+         if constexpr(sizeof(T) == 4) { return unpacku32le(buffer); }
+    else if constexpr(sizeof(T) == 8) { return unpacku64le(buffer); }
+    else if constexpr(sizeof(T) == 2) { return unpacku16le(buffer); }
+    else if constexpr(sizeof(T) == 1) { return unpacku8le(buffer); }
+    else { static_assert(false, "Unimplemented byte size"); }
+#else
+    return C11TgUnpackDispatchLe<T, sizeof(T)>::unpack(buffer);
+#endif
 }
 
 template <typename T>
 static inline
-void* tgunpacku(void const* buffer, T* x) {
-    *x = tgunpacku<T>(buffer);
-    return (unsigned char*)buffer + sizeof(*x);
+T* tgunpackule(void const* buffer, T* x) {
+    *x = tgunpackule<T>(buffer);
+    return x + 1;
 }
 
 namespace vrdc {
@@ -170,41 +208,6 @@ void vrdc_unpack(void const* buffer, T1* arg1, TOther... argother) {
 }
 
 } // namespace vrdc
-
-static inline constexpr
-size_t size_of_all_args(void) {
-    return 0;
-}
-template <typename BaseT>
-void ptrfwd(BaseT const** addr, size_t fwdby) {
-    auto newaddr = (unsigned char const*)*addr + fwdby;
-    *addr = newaddr;
-}
-
-template <typename BaseT>
-BaseT* ptrfwdget(BaseT const* addr, size_t fwdby) {
-    return (BaseT*)((unsigned char*)addr + fwdby);
-}
-
-template<typename T1, typename... TOther>
-static inline constexpr
-size_t size_of_all_args(T1 arg1, TOther... argother);
-template<typename T1, typename... TOther>
-static inline constexpr
-size_t size_of_all_args(T1* arg1, TOther... argother);
-
-template<typename T1, typename... TOther>
-static inline constexpr
-size_t size_of_all_args(T1 arg1, TOther... argother) {
-    return sizeof(arg1) + size_of_all_args(argother...);
-}
-template<typename T1, typename... TOther>
-static inline constexpr
-size_t size_of_all_args(T1* arg1, TOther... argother) {
-    return sizeof(*arg1) + size_of_all_args(argother...);
-}
-
-
 
 #endif /* FEB_2025_CPP_NW_PACKER_HPP */
 
