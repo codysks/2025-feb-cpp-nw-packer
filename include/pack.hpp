@@ -186,6 +186,28 @@ T* tgunpackule(void const* buffer, T* x) {
     return x + 1;
 }
 
+static inline
+constexpr size_t size_of_all_args(void) {
+    return 0;
+}
+template<typename T1, typename... TOther>
+static inline constexpr
+size_t size_of_all_args(T1 arg1, TOther... argother);
+template<typename T1, typename... TOther>
+static inline constexpr
+size_t size_of_all_args(T1* arg1, TOther... argother);
+
+template<typename T1, typename... TOther>
+static inline constexpr
+size_t size_of_all_args(T1 arg1, TOther... argother) {
+    return sizeof(arg1) + size_of_all_args(argother...);
+}
+template<typename T1, typename... TOther>
+static inline constexpr
+size_t size_of_all_args(T1* arg1, TOther... argother) {
+    return sizeof(*arg1) + size_of_all_args(argother...);
+}
+
 namespace vrdc {
 [[deprecated("vrdc_unpack() must be called with atleast 2 parameters (buffer and unpack site)")]]
 static inline
@@ -205,6 +227,13 @@ void vrdc_unpack(void const* buffer, T1* arg1, TOther... argother) {
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     vrdc_unpack(p + sizeof(*arg1), argother...);
 #pragma GCC diagnostic pop
+}
+
+template<typename T1, typename... TOther>
+static inline
+size_t vrdc_unpack_get_written_bytes(void const* buffer, T1* arg1, TOther... argother) {
+    vrdc_unpack(buffer, arg1, argother...);
+    return size_of_all_args(arg1, argother...);
 }
 
 } // namespace vrdc

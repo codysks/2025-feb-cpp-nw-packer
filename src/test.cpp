@@ -222,6 +222,70 @@ void unpack_unsigned_little_endian_type_generic(void) {
         assert(u64_array[i] == byte::swap64(expected64));
     }
 }
+
+void vrdc_unpack(void) {
+    constexpr size_t BUFFER_MAX_SIZE = 21600;
+    unsigned char buffer[BUFFER_MAX_SIZE] = { 0 };
+    for (size_t i = 0; i < BUFFER_MAX_SIZE; ++i) {
+        buffer[i] = 255 - (i % 256);
+    }
+#pragma pack(push, 1)
+    struct Message1 {
+        uint8_t u8__1;
+        uint16_t u16__2;
+        uint32_t u32__3;
+        uint32_t u32__4;
+        uint16_t u16__5;
+        uint64_t u64__6;
+        uint8_t u8__7;
+        uint16_t u16__8;
+    };
+#pragma pack(pop)
+    Message1 m1;
+
+    ::vrdc::vrdc_unpack(buffer,
+        &m1.u8__1,
+        &m1.u16__2,
+        &m1.u32__3,
+        &m1.u32__4,
+        &m1.u16__5,
+        &m1.u64__6,
+        &m1.u8__7,
+        &m1.u16__8
+    );
+    assert(m1.u8__1 == 0xff);
+    assert(m1.u16__2 == 0xfefd);
+    assert(m1.u32__3 == 0xfcfbfaf9);
+    assert(m1.u32__4 == 0xf8f7f6f5);
+    assert(m1.u16__5 == 0xf4f3);
+    assert(m1.u64__6 == 0xf2f1f0efeeedeceb);
+    assert(m1.u8__7 == 0xea);
+    assert(m1.u16__8 == 0xe9e8);
+
+    size_t fn_return_size = ::vrdc::vrdc_unpack_get_written_bytes(buffer,
+        &m1.u8__1,
+        &m1.u16__2,
+        &m1.u32__3,
+        &m1.u32__4,
+        &m1.u16__5,
+        &m1.u64__6,
+        &m1.u8__7,
+        &m1.u16__8
+    );
+    fn_return_size = ::vrdc::vrdc_unpack_get_written_bytes(buffer + fn_return_size,
+        &m1.u8__1,
+        &m1.u16__2,
+        &m1.u32__3,
+        &m1.u32__4,
+        &m1.u16__5,
+        &m1.u64__6,
+        &m1.u8__7,
+        &m1.u16__8
+    );
+    assert(m1.u8__1 == 0xe7);
+    assert(m1.u16__8 == 0xd1d0);
+}
+
 } /* namespace fn_test */
 
 int main(void) {
@@ -229,6 +293,7 @@ int main(void) {
     fn_test::unpack_unsigned_little_endian();
     fn_test::unpack_unsigned_type_generic();
     fn_test::unpack_unsigned_little_endian_type_generic();
+	fn_test::vrdc_unpack();
 	std::cout << "ok" << std::endl;
 	return 0;
 }
