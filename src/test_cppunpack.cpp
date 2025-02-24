@@ -313,6 +313,5 @@ int main(void) {
     fn_test::unpack_unsigned_type_generic();
     fn_test::unpack_unsigned_little_endian_type_generic();
 	fn_test::vrdc_unpack();
-	std::cout << "ok" << std::endl;
 	return 0;
 }
