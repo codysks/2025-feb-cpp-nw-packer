@@ -128,7 +128,7 @@ T tgunpacku(void const* buffer) {
     else if constexpr(sizeof(T) == 8) { return unpacku64(buffer); }
     else if constexpr(sizeof(T) == 2) { return unpacku16(buffer); }
     else if constexpr(sizeof(T) == 1) { return unpacku8(buffer); }
-    else { static_assert(false, "Unimplemented byte size"); }
+    else { static_assert(!sizeof(*T), "Unimplemented byte size"); }
 #else
     return C11TgUnpackDispatch<T, sizeof(T)>::unpack(buffer);
 #endif
@@ -173,7 +173,7 @@ T tgunpackule(void const* buffer) {
     else if constexpr(sizeof(T) == 8) { return unpacku64le(buffer); }
     else if constexpr(sizeof(T) == 2) { return unpacku16le(buffer); }
     else if constexpr(sizeof(T) == 1) { return unpacku8le(buffer); }
-    else { static_assert(false, "Unimplemented byte size"); }
+    else { static_assert(!sizeof(*T), "Unimplemented byte size"); }
 #else
     return C11TgUnpackDispatchLe<T, sizeof(T)>::unpack(buffer);
 #endif
